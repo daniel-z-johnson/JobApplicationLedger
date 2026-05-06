@@ -28,6 +28,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-session-data-redis")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.flywaydb:flyway-database-postgresql")
+	implementation("com.fasterxml.uuid:java-uuid-generator:5.1.0")
 	implementation("org.springframework.ai:spring-ai-starter-model-ollama")
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("io.micrometer:micrometer-registry-prometheus")

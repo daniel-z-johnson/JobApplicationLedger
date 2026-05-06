@@ -1,11 +1,11 @@
 services:
   postgres:
-    image: postgres:18
+    image: postgres:18.3-alpine3.22
     container_name: postgres
     environment:
-      POSTGRES_USER: joba
+      POSTGRES_USER: jobs
       POSTGRES_PASSWORD: postgress
-      POSTGRES_DB: joba
+      POSTGRES_DB: jobs
     ports:
       - "5432:5432"
 #    volumes:
