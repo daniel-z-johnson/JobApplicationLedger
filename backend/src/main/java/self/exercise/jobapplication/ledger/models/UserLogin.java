@@ -1,7 +1,6 @@
 package self.exercise.jobapplication.ledger.models;
 
 import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.UUIDGenerator;
 import jakarta.persistence.*;
 import lombok.Data;
 
