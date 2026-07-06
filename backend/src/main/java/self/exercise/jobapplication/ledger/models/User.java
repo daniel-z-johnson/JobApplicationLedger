@@ -1,9 +1,6 @@
 package self.exercise.jobapplication.ledger.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.Instant;
@@ -29,4 +26,19 @@ public class User {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if(this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+        if(this.updatedAt == null) {
+            this.createdAt = Instant.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = Instant.now();
+    }
 }

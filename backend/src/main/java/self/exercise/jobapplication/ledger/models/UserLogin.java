@@ -1,12 +1,6 @@
 package self.exercise.jobapplication.ledger.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.Instant;
@@ -29,4 +23,11 @@ public class UserLogin {
 
     @Column(name = "login_at", nullable = false)
     private Instant loginAt;
+
+    @PrePersist
+    public void prePersist() {
+        if(this.loginAt == null) {
+            this.loginAt = Instant.now();
+        }
+    }
 }
