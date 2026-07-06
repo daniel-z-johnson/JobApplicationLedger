@@ -18,6 +18,8 @@ public class UserLogin {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     private User user;
 
     @Column(name = "ip_address", nullable = false)
