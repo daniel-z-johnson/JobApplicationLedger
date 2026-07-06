@@ -1,5 +1,7 @@
 package self.exercise.jobapplication.ledger.models;
 
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.UUIDGenerator;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,6 +28,9 @@ public class UserLogin {
 
     @PrePersist
     public void prePersist() {
+        if(this.id == null) {
+            this.id = Generators.timeBasedEpochGenerator().generate();
+        }
         if(this.loginAt == null) {
             this.loginAt = Instant.now();
         }

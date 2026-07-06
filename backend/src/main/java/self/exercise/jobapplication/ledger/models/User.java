@@ -1,5 +1,6 @@
 package self.exercise.jobapplication.ledger.models;
 
+import com.fasterxml.uuid.Generators;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -29,6 +30,9 @@ public class User {
 
     @PrePersist
     public void prePersist() {
+        if(this.id == null) {
+            this.id = Generators.timeBasedEpochGenerator().generate();
+        }
         if(this.createdAt == null) {
             this.createdAt = Instant.now();
         }
