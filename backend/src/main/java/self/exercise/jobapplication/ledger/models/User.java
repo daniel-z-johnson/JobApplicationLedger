@@ -21,6 +21,7 @@ public class User {
     private String email;
 
     @Column(name = "password_hash", nullable = false)
+    @lombok.ToString.Exclude
     private String passwordHash;
 
     @Column(name = "created_at", nullable = false)
