@@ -37,7 +37,7 @@ public class User {
             this.createdAt = Instant.now();
         }
         if(this.updatedAt == null) {
-            this.createdAt = Instant.now();
+            this.updatedAt = Instant.now();
         }
     }
 
