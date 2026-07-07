@@ -1,4 +1,4 @@
-package self.exercise.jobapplicationledger;
+package self.exercise.jobapplication.ledger;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;

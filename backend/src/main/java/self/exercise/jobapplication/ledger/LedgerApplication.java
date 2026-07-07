@@ -1,13 +1,13 @@
-package self.exercise.jobapplicationledger;
+package self.exercise.jobapplication.ledger;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class JobapplicationledgerApplication {
+public class LedgerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(JobapplicationledgerApplication.class, args);
+		SpringApplication.run(LedgerApplication.class, args);
 	}
 
 }
