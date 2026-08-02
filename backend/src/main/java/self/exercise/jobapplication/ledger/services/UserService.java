@@ -15,17 +15,18 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User findByEmail(String email) {
-        return userRepo.
-                findByEmail(email).
-                orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        return userRepo
+                .findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
     public User saveUser(UserSignUpLoginDTO userSignUp) {
-        if(userSignUp.password() == null || userSignUp.password().equals(userSignUp.confirmPassword())) {
+        if (userSignUp.password() == null || !userSignUp.password().equals(userSignUp.confirmPassword())) {
             throw new IllegalArgumentException("Password and confirm password do not match");
         }
         User user = new User();
         user.setEmail(userSignUp.email());
+        user.setUsername(userSignUp.username());
         user.setPasswordHash(passwordEncoder.encode(userSignUp.password()));
         return userRepo.save(user);
     }

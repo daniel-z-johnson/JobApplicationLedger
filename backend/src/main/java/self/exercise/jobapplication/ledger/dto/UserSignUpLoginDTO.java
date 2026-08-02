@@ -1,4 +1,12 @@
 package self.exercise.jobapplication.ledger.dto;
 
-public record UserSignUpLoginDTO(String email, String userName, String password, String confirmPassword) {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record UserSignUpLoginDTO(
+        @Email @NotBlank String email,
+        @NotBlank String username,
+        @NotBlank @Size(min = 8, message = "Password must be at least 8 characters") String password,
+        @NotBlank String confirmPassword) {
 }
