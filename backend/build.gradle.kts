@@ -29,7 +29,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.springframework.ai:spring-ai-starter-model-ollama")
-	implementation("org.springframework.ai:spring-ai-starter-model-openai")
+	// implementation("org.springframework.ai:spring-ai-starter-model-openai")
 	// Source: https://mvnrepository.com/artifact/com.fasterxml.uuid/java-uuid-generator
 	implementation("com.fasterxml.uuid:java-uuid-generator:5.2.0")
 	compileOnly("org.projectlombok:lombok")
