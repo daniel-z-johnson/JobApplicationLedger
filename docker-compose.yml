@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:18
+    image: postgres:18-alpine
     container_name: postgres
     environment:
       POSTGRES_USER: joba
@@ -12,7 +12,7 @@ services:
 #      - postgres_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:8
+    image: redis:8-alpine
     container_name: redis
     ports:
       - "6379:6379"
