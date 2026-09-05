@@ -14,7 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfLogoutHandler;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,7 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
     private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
+    private final CsrfTokenRepository csrfTokenRepository;
 
     @GetMapping("/csrf")
     public CsrfToken csrf(CsrfToken csrfToken) {
@@ -79,6 +82,7 @@ public class UserController {
             Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response) {
+        new CsrfLogoutHandler(csrfTokenRepository).logout(request, response, authentication);
         new SecurityContextLogoutHandler().logout(request, response, authentication);
     }
 
