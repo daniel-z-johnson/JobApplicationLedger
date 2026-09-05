@@ -23,10 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import self.exercise.jobapplication.ledger.dto.AuthenticatedUserDTO;
-import self.exercise.jobapplication.ledger.dto.UserDTO;
 import self.exercise.jobapplication.ledger.dto.UserLoginRequest;
-import self.exercise.jobapplication.ledger.dto.UserSignUpLoginDTO;
+import self.exercise.jobapplication.ledger.dto.UserRegistrationRequest;
+import self.exercise.jobapplication.ledger.dto.UserResponse;
 import self.exercise.jobapplication.ledger.models.User;
 import self.exercise.jobapplication.ledger.security.UserPrincipal;
 import self.exercise.jobapplication.ledger.services.UserService;
@@ -48,13 +47,13 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public UserDTO signup(@Valid @RequestBody UserSignUpLoginDTO userSignUpLoginDTO) {
-        User savedUser = userService.saveUser(userSignUpLoginDTO);
-        return new UserDTO(savedUser.getEmail(), savedUser.getUsername(), savedUser.getCreatedAt(), savedUser.getUpdatedAt());
+    public UserResponse signup(@Valid @RequestBody UserRegistrationRequest registrationRequest) {
+        User savedUser = userService.saveUser(registrationRequest);
+        return UserResponse.from(savedUser);
     }
 
     @PostMapping("/login")
-    public AuthenticatedUserDTO login(
+    public UserResponse login(
             @Valid @RequestBody UserLoginRequest loginRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -74,7 +73,7 @@ public class UserController {
         SecurityContextHolder.setContext(securityContext);
         securityContextRepository.saveContext(securityContext, request, response);
 
-        return AuthenticatedUserDTO.from((UserPrincipal) authentication.getPrincipal());
+        return UserResponse.from((UserPrincipal) authentication.getPrincipal());
     }
 
     @PostMapping("/logout")
@@ -87,8 +86,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public AuthenticatedUserDTO currentUser(@AuthenticationPrincipal UserPrincipal principal) {
-        return AuthenticatedUserDTO.from(principal);
+    public UserResponse currentUser(@AuthenticationPrincipal UserPrincipal principal) {
+        return UserResponse.from(principal);
     }
 
     @ExceptionHandler(AuthenticationException.class)
