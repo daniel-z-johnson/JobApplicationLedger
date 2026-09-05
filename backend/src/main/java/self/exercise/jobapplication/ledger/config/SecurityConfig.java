@@ -1,7 +1,9 @@
 package self.exercise.jobapplication.ledger.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,10 @@ import org.springframework.security.web.authentication.session.ChangeSessionIdAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import self.exercise.jobapplication.ledger.dto.ApiErrorResponse;
+import tools.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 
 @Slf4j
 @Configuration
@@ -24,7 +30,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            SecurityContextRepository securityContextRepository) throws Exception {
+            SecurityContextRepository securityContextRepository,
+            ObjectMapper objectMapper) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/u/csrf").permitAll()
@@ -38,14 +45,22 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, exception) -> {
-                            response.setStatus(401);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                            writeErrorResponse(
+                                    response,
+                                    objectMapper,
+                                    HttpStatus.UNAUTHORIZED,
+                                    "Authentication is required",
+                                    request.getRequestURI()
+                            );
                         })
                         .accessDeniedHandler((request, response, exception) -> {
-                            response.setStatus(403);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write("{\"error\":\"Forbidden\"}");
+                            writeErrorResponse(
+                                    response,
+                                    objectMapper,
+                                    HttpStatus.FORBIDDEN,
+                                    "Access denied",
+                                    request.getRequestURI()
+                            );
                         })
                 );
 
@@ -65,6 +80,20 @@ public class SecurityConfig {
     @Bean
     public SessionAuthenticationStrategy sessionAuthenticationStrategy() {
         return new ChangeSessionIdAuthenticationStrategy();
+    }
+
+    private static void writeErrorResponse(
+            HttpServletResponse response,
+            ObjectMapper objectMapper,
+            HttpStatus status,
+            String message,
+            String path) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        objectMapper.writeValue(
+                response.getOutputStream(),
+                ApiErrorResponse.of(status, message, path)
+        );
     }
 
     @Bean

@@ -30,10 +30,10 @@ public class UserService {
         String normalizedEmail = normalizeEmail(registrationRequest.email());
 
         if (userRepo.existsByEmail(normalizedEmail)) {
-            throw new DuplicateUserException("email");
+            throw new DuplicateUserException();
         }
         if (userRepo.existsByUsername(registrationRequest.username())) {
-            throw new DuplicateUserException("username");
+            throw new DuplicateUserException();
         }
 
         User user = new User();

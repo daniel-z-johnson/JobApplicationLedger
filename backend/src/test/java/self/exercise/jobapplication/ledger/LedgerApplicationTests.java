@@ -95,7 +95,14 @@ class LedgerApplicationTests {
 							  "confirmPassword": "different-password"
 							}
 							"""))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.error").value("Bad Request"))
+				.andExpect(jsonPath("$.message").value("Request validation failed"))
+				.andExpect(jsonPath("$.path").value("/u/register"))
+				.andExpect(jsonPath("$.violations.request[0]").value(
+						"Password and confirm password do not match"
+				));
 
 		assertThat(userRepo.count()).isZero();
 	}
@@ -113,7 +120,14 @@ class LedgerApplicationTests {
 							  "confirmPassword": "password123"
 							}
 							"""))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.error").value("Bad Request"))
+				.andExpect(jsonPath("$.message").value("Request validation failed"))
+				.andExpect(jsonPath("$.path").value("/u/register"))
+				.andExpect(jsonPath("$.violations.username[0]").value(
+						"Username may contain only lowercase letters, numbers, underscores, and hyphens"
+				));
 
 		assertThat(userRepo.count()).isZero();
 	}
@@ -146,7 +160,11 @@ class LedgerApplicationTests {
 							  "confirmPassword": "password123"
 							}
 							"""))
-				.andExpect(status().isConflict());
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.status").value(409))
+				.andExpect(jsonPath("$.error").value("Conflict"))
+				.andExpect(jsonPath("$.message").value("An account with those details already exists"))
+				.andExpect(jsonPath("$.path").value("/u/register"));
 
 		mockMvc.perform(post("/u/register")
 					.with(csrf())
@@ -159,7 +177,8 @@ class LedgerApplicationTests {
 							  "confirmPassword": "password123"
 							}
 							"""))
-				.andExpect(status().isConflict());
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("An account with those details already exists"));
 
 		assertThat(userRepo.count()).isOne();
 	}
@@ -176,7 +195,10 @@ class LedgerApplicationTests {
 							}
 							"""))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.error").value("Invalid email or password"))
+				.andExpect(jsonPath("$.status").value(401))
+				.andExpect(jsonPath("$.error").value("Unauthorized"))
+				.andExpect(jsonPath("$.message").value("Invalid email or password"))
+				.andExpect(jsonPath("$.path").value("/u/login"))
 				.andExpect(cookie().doesNotExist("SESSION"));
 	}
 
