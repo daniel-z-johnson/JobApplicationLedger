@@ -56,6 +56,21 @@ class SecurityConfigTests {
     }
 
     @Test
+    void loginRequiresCsrfToken() throws Exception {
+        mockMvc.perform(post("/u/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "user@example.com",
+                                  "password": "password123"
+                                }
+                                """))
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json("{\"error\":\"Forbidden\"}"));
+    }
+
+    @Test
     void otherEndpointsRequireAuthentication() throws Exception {
         mockMvc.perform(get("/u/me"))
                 .andExpect(status().isUnauthorized())

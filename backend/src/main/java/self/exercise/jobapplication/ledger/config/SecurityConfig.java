@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/u/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/u/register", "/u/login").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(CsrfConfigurer::spa)

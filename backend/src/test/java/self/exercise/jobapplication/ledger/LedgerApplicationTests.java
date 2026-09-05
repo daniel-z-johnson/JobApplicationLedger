@@ -7,11 +7,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import self.exercise.jobapplication.ledger.repositories.UserRepo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -28,6 +30,9 @@ class LedgerApplicationTests {
 
 	@Autowired
 	private UserRepo userRepo;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@BeforeEach
 	void clearUsers() {
@@ -51,7 +56,16 @@ class LedgerApplicationTests {
 							  "confirmPassword": "password123"
 							}
 							"""))
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").isNotEmpty())
+				.andExpect(jsonPath("$.email").value("user@example.com"))
+				.andExpect(jsonPath("$.username").value("example-user"))
+				.andExpect(jsonPath("$.password").doesNotExist())
+				.andExpect(jsonPath("$.passwordHash").doesNotExist());
+
+		var storedUser = userRepo.findByEmail("user@example.com").orElseThrow();
+		assertThat(storedUser.getPasswordHash()).isNotEqualTo("password123");
+		assertThat(passwordEncoder.matches("password123", storedUser.getPasswordHash())).isTrue();
 
 		var loginResult = mockMvc.perform(post("/u/login")
 					.with(csrf())
@@ -78,8 +92,30 @@ class LedgerApplicationTests {
 		mockMvc.perform(post("/u/logout").cookie(sessionCookie).with(csrf()))
 				.andExpect(status().isNoContent());
 
-		mockMvc.perform(get("/u/me"))
+		mockMvc.perform(get("/u/me").cookie(sessionCookie))
 				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void registrationRejectsInvalidEmailAndShortPassword() throws Exception {
+		mockMvc.perform(post("/u/register")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{
+							  "email": "not-an-email",
+							  "username": "example-user",
+							  "password": "short",
+							  "confirmPassword": "short"
+							}
+							"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.violations.email").isArray())
+				.andExpect(jsonPath("$.violations.password[0]").value(
+						"Password must be between 8 and 72 characters"
+				));
+
+		assertThat(userRepo.count()).isZero();
 	}
 
 	@Test
@@ -200,6 +236,19 @@ class LedgerApplicationTests {
 				.andExpect(jsonPath("$.message").value("Invalid email or password"))
 				.andExpect(jsonPath("$.path").value("/u/login"))
 				.andExpect(cookie().doesNotExist("SESSION"));
+	}
+
+	@Test
+	void actuatorEndpointsRequireAdminRole() throws Exception {
+		mockMvc.perform(get("/actuator/health"))
+				.andExpect(status().isUnauthorized());
+
+		mockMvc.perform(get("/actuator/health").with(user("regular-user").roles("USER")))
+				.andExpect(status().isForbidden());
+
+		mockMvc.perform(get("/actuator/health").with(user("admin").roles("ADMIN")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("UP"));
 	}
 
 }
