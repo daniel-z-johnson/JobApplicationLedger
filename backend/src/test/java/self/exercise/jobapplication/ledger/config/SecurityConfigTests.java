@@ -52,7 +52,7 @@ class SecurityConfigTests {
                         .content("{}"))
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json("{\"error\":\"Forbidden\"}"));
+                .andExpect(jsonPath("$.error").value("Forbidden"));
     }
 
     @Test
@@ -67,7 +67,7 @@ class SecurityConfigTests {
                                 """))
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json("{\"error\":\"Forbidden\"}"));
+                .andExpect(jsonPath("$.error").value("Forbidden"));
     }
 
     @Test
@@ -75,6 +75,6 @@ class SecurityConfigTests {
         mockMvc.perform(get("/u/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json("{\"error\":\"Unauthorized\"}"));
+                .andExpect(jsonPath("$.error").value("Unauthorized"));
     }
 }
