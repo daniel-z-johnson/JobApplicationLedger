@@ -45,7 +45,7 @@ class LedgerApplicationTests {
 					.contentType(MediaType.APPLICATION_JSON)
 					.content("""
 							{
-							  "email": "user@example.com",
+							  "email": "  USER@Example.COM  ",
 							  "username": "example-user",
 							  "password": "password123",
 							  "confirmPassword": "password123"
@@ -80,6 +80,70 @@ class LedgerApplicationTests {
 
 		mockMvc.perform(get("/u/me"))
 				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void registrationRejectsMismatchedPasswords() throws Exception {
+		mockMvc.perform(post("/u/register")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{
+							  "email": "user@example.com",
+							  "username": "example-user",
+							  "password": "password123",
+							  "confirmPassword": "different-password"
+							}
+							"""))
+				.andExpect(status().isBadRequest());
+
+		assertThat(userRepo.count()).isZero();
+	}
+
+	@Test
+	void registrationRejectsDuplicateNormalizedEmailAndUsername() throws Exception {
+		String firstUser = """
+				{
+				  "email": "user@example.com",
+				  "username": "example-user",
+				  "password": "password123",
+				  "confirmPassword": "password123"
+				}
+				""";
+
+		mockMvc.perform(post("/u/register")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(firstUser))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/u/register")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{
+							  "email": "  USER@EXAMPLE.COM ",
+							  "username": "another-user",
+							  "password": "password123",
+							  "confirmPassword": "password123"
+							}
+							"""))
+				.andExpect(status().isConflict());
+
+		mockMvc.perform(post("/u/register")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{
+							  "email": "another@example.com",
+							  "username": "example-user",
+							  "password": "password123",
+							  "confirmPassword": "password123"
+							}
+							"""))
+				.andExpect(status().isConflict());
+
+		assertThat(userRepo.count()).isOne();
 	}
 
 	@Test
