@@ -3,3 +3,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/joba
     username: joba
     password: postgress
+  data:
+    redis:
+      host: localhost
+      port: 6379
