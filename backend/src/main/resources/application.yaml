@@ -1,6 +1,14 @@
 spring:
   application:
     name: ledger
+  jpa:
+    open-in-view: false
   ai:
     ollama:
         model: mistral:latest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

@@ -8,7 +8,7 @@ The schema below is the current working design for JobLedger.
 
 ```sql
 CREATE TABLE users (
-    id              BIGINT PRIMARY KEY,
+    id              UUID PRIMARY KEY,
     email           VARCHAR(320) NOT NULL UNIQUE,
     password_hash   VARCHAR(255) NOT NULL,
     created_at      TIMESTAMP NOT NULL,
@@ -20,8 +20,8 @@ CREATE TABLE users (
 
 ```sql
 CREATE TABLE companies (
-    id              BIGINT PRIMARY KEY,
-    user_id         BIGINT NOT NULL,
+    id              UUID PRIMARY KEY,
+    user_id         UUID NOT NULL,
     name            VARCHAR(255) NOT NULL,
     company_type    VARCHAR(30) NOT NULL,
     website_url     TEXT,
@@ -42,10 +42,10 @@ CREATE TABLE companies (
 
 ```sql
 CREATE TABLE applications (
-    id                  BIGINT PRIMARY KEY,
-    user_id                 BIGINT NOT NULL,
-    company_id              BIGINT NOT NULL,
-    recruiter_company_id    BIGINT,
+    id                  UUID PRIMARY KEY,
+    user_id                 UUID NOT NULL,
+    company_id              UUID NOT NULL,
+    recruiter_company_id    UUID,
     job_title               VARCHAR(255) NOT NULL,
     description             TEXT,
     job_url                 TEXT,
@@ -84,8 +84,8 @@ CREATE TABLE applications (
 
 ```sql
 CREATE TABLE application_updates (
-    id                  BIGINT PRIMARY KEY,
-    application_id      BIGINT NOT NULL,
+    id                  UUID PRIMARY KEY,
+    application_id      UUID NOT NULL,
     update_type         VARCHAR(50) NOT NULL,
     previous_status     VARCHAR(50),
     new_status          VARCHAR(50),
@@ -111,8 +111,8 @@ CREATE TABLE application_updates (
 
 ```sql
 CREATE TABLE application_update_notes (
-    id                      BIGINT PRIMARY KEY,
-    application_update_id   BIGINT NOT NULL,
+    id                      UUID PRIMARY KEY,
+    application_update_id   UUID NOT NULL,
     note                    TEXT NOT NULL,
     created_at              TIMESTAMP NOT NULL,
     updated_at              TIMESTAMP NOT NULL,
@@ -128,8 +128,8 @@ CREATE TABLE application_update_notes (
 
 ```sql
 CREATE TABLE application_tasks (
-    id              BIGINT PRIMARY KEY,
-    application_id  BIGINT NOT NULL,
+    id              UUID PRIMARY KEY,
+    application_id  UUID NOT NULL,
     description     TEXT NOT NULL,
     due_at          TIMESTAMP,
     completed_at    TIMESTAMP,
