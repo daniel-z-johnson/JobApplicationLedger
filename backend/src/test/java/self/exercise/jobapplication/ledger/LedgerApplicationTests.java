@@ -101,6 +101,24 @@ class LedgerApplicationTests {
 	}
 
 	@Test
+	void registrationRejectsInvalidUsernameCharacters() throws Exception {
+		mockMvc.perform(post("/u/register")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{
+							  "email": "user@example.com",
+							  "username": "Invalid Username!",
+							  "password": "password123",
+							  "confirmPassword": "password123"
+							}
+							"""))
+				.andExpect(status().isBadRequest());
+
+		assertThat(userRepo.count()).isZero();
+	}
+
+	@Test
 	void registrationRejectsDuplicateNormalizedEmailAndUsername() throws Exception {
 		String firstUser = """
 				{
