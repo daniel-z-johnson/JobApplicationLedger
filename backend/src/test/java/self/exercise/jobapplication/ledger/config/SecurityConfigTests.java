@@ -8,7 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import self.exercise.jobapplication.ledger.controllers.UserController;
+import self.exercise.jobapplication.ledger.services.UserLoginService;
 import self.exercise.jobapplication.ledger.services.UserService;
+import self.exercise.jobapplication.ledger.web.ClientIpAddressResolver;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,6 +28,12 @@ class SecurityConfigTests {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private UserLoginService userLoginService;
+
+    @MockitoBean
+    private ClientIpAddressResolver clientIpAddressResolver;
 
     @Test
     void csrfTokenIsPubliclyAvailable() throws Exception {
