@@ -79,14 +79,12 @@ class LedgerApplicationTests {
 		userLoginRepo.save(login(user, "192.0.2.2", middle));
 		userLoginRepo.save(login(user, "192.0.2.3", newest));
 
-		var page = userLoginRepo.findByUserIdOrderByLoginAtDesc(
+		var logins = userLoginRepo.findAllByUserIdOrderByLoginAtDesc(
 				user.getId(),
 				PageRequest.of(0, 2)
 		);
 
-		assertThat(page.getTotalElements()).isEqualTo(3);
-		assertThat(page.getTotalPages()).isEqualTo(2);
-		assertThat(page.getContent())
+		assertThat(logins)
 				.extracting(UserLogin::getLoginAt)
 				.containsExactly(newest, middle);
 	}
@@ -155,12 +153,12 @@ class LedgerApplicationTests {
 
 		var sessionCookie = loginResult.getResponse().getCookie("SESSION");
 		assertThat(sessionCookie).isNotNull();
-		var recordedLogins = userLoginRepo.findByUserIdOrderByLoginAtDesc(
+		var recordedLogins = userLoginRepo.findAllByUserIdOrderByLoginAtDesc(
 				storedUser.getId(),
 				PageRequest.of(0, 10)
 		);
-		assertThat(recordedLogins.getTotalElements()).isOne();
-		assertThat(recordedLogins.getContent().getFirst().getIpAddress())
+		assertThat(recordedLogins).hasSize(1);
+		assertThat(recordedLogins.getFirst().getIpAddress())
 				.isEqualTo("192.0.2.30");
 
 		mockMvc.perform(get("/u/me").cookie(sessionCookie))
