@@ -65,6 +65,14 @@ public class ApiExceptionHandler {
         return response(HttpStatus.UNAUTHORIZED, "Invalid email or password", request);
     }
 
+    @ExceptionHandler(LoginRecordingException.class)
+    public ResponseEntity<ApiErrorResponse> handleLoginRecordingFailure(
+            LoginRecordingException exception,
+            HttpServletRequest request) {
+        log.error("Unable to record successful login for {}", request.getRequestURI(), exception);
+        return response(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to complete login", request);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(
             AccessDeniedException exception,
