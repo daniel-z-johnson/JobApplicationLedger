@@ -34,9 +34,9 @@ public class UserLoginService {
 
     @Transactional(readOnly = true)
     public List<UserLogin> findRecentLogins(UUID userId, int limit) {
-        return userLoginRepo.findByUserIdOrderByLoginAtDesc(
+        return userLoginRepo.findAllByUserIdOrderByLoginAtDesc(
                 userId,
                 PageRequest.of(0, limit)
-        ).getContent();
+        );
     }
 }
