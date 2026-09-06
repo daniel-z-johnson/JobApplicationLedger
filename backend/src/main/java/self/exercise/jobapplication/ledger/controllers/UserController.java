@@ -81,6 +81,8 @@ public class UserController {
                     principal,
                     clientIpAddressResolver.resolve(request)
             );
+        } catch (org.springframework.security.core.AuthenticationException exception) {
+            throw exception;
         } catch (RuntimeException exception) {
             throw new LoginRecordingException(exception);
         }
