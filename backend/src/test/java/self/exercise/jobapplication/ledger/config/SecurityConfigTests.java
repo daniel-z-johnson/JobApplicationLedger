@@ -16,6 +16,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,7 +38,7 @@ class SecurityConfigTests {
 
     @Test
     void csrfTokenIsPubliclyAvailable() throws Exception {
-        mockMvc.perform(get("/u/csrf"))
+        mockMvc.perform(get("/api/u/csrf").contextPath("/api"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.headerName").isNotEmpty())
                 .andExpect(jsonPath("$.parameterName").value("_csrf"))
@@ -45,8 +46,33 @@ class SecurityConfigTests {
     }
 
     @Test
+    void spaCookieIsReadableOutsideApiAndAcceptedAsHeader() throws Exception {
+        var result = mockMvc.perform(get("/api/u/csrf").contextPath("/api"))
+                .andExpect(status().isOk())
+                .andExpect(cookie().path("XSRF-TOKEN", "/"))
+                .andExpect(cookie().httpOnly("XSRF-TOKEN", false))
+                .andReturn();
+        var tokenCookie = result.getResponse().getCookie("XSRF-TOKEN");
+
+        mockMvc.perform(post("/api/u/register").contextPath("/api")
+                        .cookie(tokenCookie)
+                        .header("X-XSRF-TOKEN", tokenCookie.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+
+        mockMvc.perform(post("/api/u/register").contextPath("/api")
+                        .cookie(tokenCookie)
+                        .header("X-XSRF-TOKEN", "invalid")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void registrationIsPublicWhenCsrfTokenIsPresent() throws Exception {
-        mockMvc.perform(post("/u/register")
+        mockMvc.perform(post("/api/u/register").contextPath("/api")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -55,7 +81,7 @@ class SecurityConfigTests {
 
     @Test
     void registrationRequiresCsrfToken() throws Exception {
-        mockMvc.perform(post("/u/register")
+        mockMvc.perform(post("/api/u/register").contextPath("/api")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isForbidden())
@@ -65,7 +91,7 @@ class SecurityConfigTests {
 
     @Test
     void loginRequiresCsrfToken() throws Exception {
-        mockMvc.perform(post("/u/login")
+        mockMvc.perform(post("/api/u/login").contextPath("/api")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -80,7 +106,7 @@ class SecurityConfigTests {
 
     @Test
     void otherEndpointsRequireAuthentication() throws Exception {
-        mockMvc.perform(get("/u/me"))
+        mockMvc.perform(get("/api/u/me").contextPath("/api"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("Unauthorized"));

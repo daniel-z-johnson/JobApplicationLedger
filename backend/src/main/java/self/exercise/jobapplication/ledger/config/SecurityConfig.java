@@ -88,7 +88,10 @@ public class SecurityConfig {
 
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
-        return CookieCsrfTokenRepository.withHttpOnlyFalse();
+        var repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        // The SPA lives outside the backend's /api context path.
+        repository.setCookiePath("/");
+        return repository;
     }
 
     @Bean
