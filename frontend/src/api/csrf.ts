@@ -4,6 +4,7 @@ export class CsrfError extends Error {}
 
 export async function getCsrfToken(signal?: AbortSignal): Promise<string> {
   // Authentication changes can rotate the token, so refresh it for each mutation.
+  // Use fetch directly to bootstrap CSRF without depending on apiRequest.
   const response = await fetch(`${env.apiBaseUrl}/u/csrf`, {
     credentials: 'same-origin',
     cache: 'no-store',

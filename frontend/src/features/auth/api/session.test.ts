@@ -48,7 +48,7 @@ describe('session', () => {
     expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/u/csrf', expect.objectContaining({ cache: 'no-store' }))
     expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/u/logout', expect.objectContaining({
       method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': 'new-token' },
+      headers: { 'X-XSRF-TOKEN': 'new-token' },
     }))
   })
 

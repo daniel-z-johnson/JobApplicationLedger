@@ -1,5 +1,5 @@
-import { env } from '../../../config/env'
-import { CsrfError, getCsrfToken } from '../../../api/csrf'
+import { CsrfError } from '../../../api/csrf'
+import { apiRequest } from '../../../api/request'
 
 export type SignupRequest = {
   email: string
@@ -36,17 +36,13 @@ async function registrationError(response: Response): Promise<SignupError> {
 }
 
 export async function signup(details: SignupRequest, signal?: AbortSignal): Promise<void> {
-  const token = await getCsrfToken(signal).catch((error: unknown) => {
+  const response = await apiRequest('/u/register', {
+    method: 'POST',
+    json: details,
+    signal,
+  }).catch((error: unknown) => {
     if (error instanceof CsrfError) throw new SignupError(error.message)
     throw error
-  })
-
-  const response = await fetch(`${env.apiBaseUrl}/u/register`, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': token },
-    body: JSON.stringify(details),
-    signal,
   })
   if (!response.ok) throw await registrationError(response)
 }
