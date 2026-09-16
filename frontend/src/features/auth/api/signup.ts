@@ -1,4 +1,5 @@
 import { env } from '../../../config/env'
+import { CsrfError, getCsrfToken } from '../../../api/csrf'
 
 export type SignupRequest = {
   email: string
@@ -35,17 +36,10 @@ async function registrationError(response: Response): Promise<SignupError> {
 }
 
 export async function signup(details: SignupRequest, signal?: AbortSignal): Promise<void> {
-  const csrfResponse = await fetch(`${env.apiBaseUrl}/u/csrf`, {
-    credentials: 'same-origin',
-    cache: 'no-store',
-    signal,
+  const token = await getCsrfToken(signal).catch((error: unknown) => {
+    if (error instanceof CsrfError) throw new SignupError(error.message)
+    throw error
   })
-  if (!csrfResponse.ok) throw new SignupError('Unable to prepare a secure signup request. Please try again.')
-
-  // Spring's SPA handler expects the raw cookie token, not the masked JSON token.
-  const cookie = document.cookie.split('; ').find(value => value.startsWith('XSRF-TOKEN='))
-  const token = cookie ? decodeURIComponent(cookie.slice('XSRF-TOKEN='.length)) : ''
-  if (!token) throw new SignupError('Unable to read the security cookie. Enable cookies and try again.')
 
   const response = await fetch(`${env.apiBaseUrl}/u/register`, {
     method: 'POST',
