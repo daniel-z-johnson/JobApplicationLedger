@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useEffect, useRef, useState } from 'react'
 import type { SubmitEvent } from 'react'
 import { signup, SignupError } from '../api/signup'
@@ -54,7 +55,7 @@ export default function SignupForm() {
   if (success) return (
     <div ref={feedback} tabIndex={-1} role="status" className="rounded-lg border border-green-700 bg-green-950 p-5 text-green-100">
       <h2 className="font-bold">Account created</h2>
-      <p className="mt-2 text-sm">Your account is ready. You are not signed in yet.</p>
+      <p className="mt-2 text-sm">Your account is ready. <Link to="/login" className="underline">Log in to continue.</Link></p>
     </div>
   )
 
