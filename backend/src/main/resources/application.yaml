@@ -6,6 +6,9 @@ spring:
   ai:
     ollama:
         model: mistral:latest
+server:
+  servlet:
+    context-path: /api
 
 management:
   endpoints:

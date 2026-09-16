@@ -16,6 +16,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,6 +43,31 @@ class SecurityConfigTests {
                 .andExpect(jsonPath("$.headerName").isNotEmpty())
                 .andExpect(jsonPath("$.parameterName").value("_csrf"))
                 .andExpect(jsonPath("$.token").isNotEmpty());
+    }
+
+    @Test
+    void spaCookieIsReadableOutsideApiAndAcceptedAsHeader() throws Exception {
+        var result = mockMvc.perform(get("/api/u/csrf").contextPath("/api"))
+                .andExpect(status().isOk())
+                .andExpect(cookie().path("XSRF-TOKEN", "/"))
+                .andExpect(cookie().httpOnly("XSRF-TOKEN", false))
+                .andReturn();
+        var tokenCookie = result.getResponse().getCookie("XSRF-TOKEN");
+
+        mockMvc.perform(post("/api/u/register").contextPath("/api")
+                        .cookie(tokenCookie)
+                        .header("X-XSRF-TOKEN", tokenCookie.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+
+        mockMvc.perform(post("/api/u/register").contextPath("/api")
+                        .cookie(tokenCookie)
+                        .header("X-XSRF-TOKEN", "invalid")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
