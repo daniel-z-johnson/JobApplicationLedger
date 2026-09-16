@@ -1,15 +1,12 @@
 import { env } from '../../../config/env'
 import { getCsrfToken } from '../../../api/csrf'
 
-export type Profile = { username: string }
-
-export async function getProfile(signal?: AbortSignal): Promise<Profile | null> {
+// Restore authentication without storing profile data in the auth feature.
+export async function checkSession(signal?: AbortSignal): Promise<boolean> {
   const response = await fetch(`${env.apiBaseUrl}/u/me`, { credentials: 'same-origin', cache: 'no-store', signal })
-  if (response.status === 401) return null
-  if (!response.ok) throw new Error('Unable to load your profile. Please try again.')
-  const body = await response.json()
-  if (typeof body.username !== 'string') throw new Error('Unable to load your profile. Please try again.')
-  return { username: body.username }
+  if (response.status === 401) return false
+  if (!response.ok) throw new Error('Unable to check your session. Please try again.')
+  return true
 }
 
 async function postSession(action: 'login' | 'logout', details?: { email: string; password: string }) {

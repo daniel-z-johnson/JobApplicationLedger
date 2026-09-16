@@ -3,7 +3,7 @@ import type { SubmitEvent } from 'react'
 import { Link } from 'react-router'
 import { login } from './api/session'
 
-export default function LoginForm({ onLogin }: { onLogin: () => Promise<void> }) {
+export default function LoginForm({ onLogin }: { onLogin: () => void }) {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
 
@@ -17,7 +17,7 @@ export default function LoginForm({ onLogin }: { onLogin: () => Promise<void> })
     try {
       await login({ email: String(data.get('email')).trim(), password: String(data.get('password')) })
       form.reset()
-      await onLogin()
+      onLogin()
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Unable to log in. Please try again.')
     } finally {

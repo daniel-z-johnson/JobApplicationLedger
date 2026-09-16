@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getProfile, login, logout } from './session'
+import { checkSession, login, logout } from './session'
 
 const fetchMock = vi.fn<typeof fetch>()
 beforeEach(() => {
@@ -9,20 +9,19 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals(); vi.resetAllMocks() })
 
 describe('session', () => {
-  it('loads only the username into profile state without caching the response', async () => {
-    fetchMock.mockResolvedValueOnce(Response.json({ username: 'test_user', email: 'test@example.com', recentLogins: [] }))
-    await expect(getProfile()).resolves.toEqual({ username: 'test_user' })
-    expect(fetchMock).toHaveBeenCalledWith('/api/u/me', expect.objectContaining({ credentials: 'same-origin', cache: 'no-store' }))
+  it('restores a valid session without requiring profile fields', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({}))
+    await expect(checkSession()).resolves.toBe(true)
   })
 
-  it('treats an expired session as signed out', async () => {
+  it('recognizes an expired session', async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }))
-    await expect(getProfile()).resolves.toBeNull()
+    await expect(checkSession()).resolves.toBe(false)
   })
 
-  it('does not confuse a server failure with a signed-out session', async () => {
+  it('does not treat a server failure as signed out', async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 503 }))
-    await expect(getProfile()).rejects.toThrow('Unable to load')
+    await expect(checkSession()).rejects.toThrow('Unable to check your session')
   })
 
   it('posts login with credentials and the raw CSRF cookie', async () => {
