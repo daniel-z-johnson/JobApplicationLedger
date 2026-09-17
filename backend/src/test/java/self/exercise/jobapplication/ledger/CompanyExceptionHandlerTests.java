@@ -12,6 +12,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class CompanyExceptionHandlerTests {
     @Test
+    void optimisticLockFailureIsRenderedAs409() throws Exception {
+        var mvc = MockMvcBuilders.standaloneSetup(new TestController())
+                .setControllerAdvice(new ApiExceptionHandler()).build();
+        mvc.perform(get("/test/conflict"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409));
+    }
+
+    @Test
     void companyNotFoundIsRenderedAsStructured404() throws Exception {
         var mvc = MockMvcBuilders.standaloneSetup(new TestController())
                 .setControllerAdvice(new ApiExceptionHandler()).build();
@@ -25,6 +34,12 @@ class CompanyExceptionHandlerTests {
 
     @RestController
     static class TestController {
+        @GetMapping("/test/conflict")
+        public void conflict() {
+            throw new org.springframework.orm.ObjectOptimisticLockingFailureException(
+                    self.exercise.jobapplication.ledger.models.Company.class, java.util.UUID.randomUUID());
+        }
+
         @GetMapping("/test/company")
         public void company() {
             throw new CompanyNotFoundException();

@@ -37,8 +37,9 @@ class CompanyServiceTests {
         assertThat(page.getContent()).extracting(item -> item.id()).containsExactly(created.id());
 
         var updated = service.updateCompany(created.id(), owner,
-                new CompanyRequest("Acme Inc", "AGENCY", "https://example.com", null));
+                new CompanyRequest("Acme Inc", "AGENCY", "https://example.com", null, created.version()));
         assertThat(updated.name()).isEqualTo("Acme Inc");
+        assertThat(updated.version()).isEqualTo(created.version() + 1);
         assertThat(updated.websiteUrl()).isEqualTo("https://example.com");
         assertThat(updated.createdAt()).isEqualTo(created.createdAt());
         assertThat(updated.updatedAt()).isAfterOrEqualTo(created.updatedAt());

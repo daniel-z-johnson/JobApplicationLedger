@@ -24,6 +24,7 @@ CREATE TABLE companies (
     user_id         UUID NOT NULL,
     name            VARCHAR(255) NOT NULL,
     company_type    VARCHAR(127) NOT NULL,
+    version         BIGINT NOT NULL DEFAULT 0,
     website_url     TEXT,
     careers_url     TEXT,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -222,7 +223,7 @@ UNIQUE (user_id, lower(btrim(name)))
 
 prevents a single user from creating duplicate company names that differ only in capitalization or surrounding spaces, while allowing different users to independently track the same company.
 
-Companies are implemented in `V3__companies.sql`. The `(user_id, id)` unique key supports future composite foreign keys that enforce application/company ownership. `company_type` is required; its allowed values still need to be defined. The application must maintain `updated_at` on edits; its default only initializes it on insertion.
+Companies are implemented in `V3__companies.sql`, with optimistic-locking support added by `V4__companies_version.sql`. V4 initializes existing rows to version 0. JPA manages the `version` column through `@Version`; updates must include the version last read by the client, and stale or concurrent edits return HTTP 409. The service compares the expected version without assigning it to the entity. The `(user_id, id)` unique key supports future composite foreign keys that enforce application/company ownership. `company_type` is required; its allowed values still need to be defined. The application must maintain `updated_at` on edits; its default only initializes it on insertion.
 
 Company notes are a planned feature. The proposed `companies_notes` table is documented under Possible Future Tables and is not yet implemented by a migration.
 

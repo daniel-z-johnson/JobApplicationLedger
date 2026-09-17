@@ -7,10 +7,10 @@ import java.util.UUID;
 
 public record CompanyResponse(UUID id, String name, String companyType,
                               String websiteUrl, String careersUrl,
-                              Instant createdAt, Instant updatedAt) {
+                              Instant createdAt, Instant updatedAt, Long version) {
     public static CompanyResponse from(Company company) {
         return new CompanyResponse(company.getId(), company.getName(), company.getCompanyType(),
                 company.getWebsiteUrl(), company.getCareersUrl(),
-                company.getCreatedAt(), company.getUpdatedAt());
+                company.getCreatedAt(), company.getUpdatedAt(), company.getVersion());
     }
 }

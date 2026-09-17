@@ -3,6 +3,8 @@ package self.exercise.jobapplication.ledger.exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -23,6 +25,18 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler(CompanyVersionConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleCompanyVersionConflict(
+            CompanyVersionConflictException exception, HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler({OptimisticLockingFailureException.class, OptimisticLockException.class})
+    public ResponseEntity<ApiErrorResponse> handleConcurrentModification(
+            Exception exception, HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, "The record has changed. Reload it before trying again.", request);
+    }
 
     @ExceptionHandler(CompanyNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleCompanyNotFound(

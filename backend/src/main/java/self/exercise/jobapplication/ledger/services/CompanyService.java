@@ -13,6 +13,7 @@ import org.springframework.util.Assert;
 import self.exercise.jobapplication.ledger.dto.CompanyRequest;
 import self.exercise.jobapplication.ledger.dto.CompanyResponse;
 import self.exercise.jobapplication.ledger.exceptions.CompanyNotFoundException;
+import self.exercise.jobapplication.ledger.exceptions.CompanyVersionConflictException;
 import self.exercise.jobapplication.ledger.models.Company;
 import self.exercise.jobapplication.ledger.repositories.CompanyRepo;
 import self.exercise.jobapplication.ledger.repositories.UserRepo;
@@ -49,6 +50,7 @@ public class CompanyService {
     public CompanyResponse createCompany(UUID userId, CompanyRequest request) {
         Assert.notNull(userId, "User ID is required");
         validate(request);
+        Assert.isNull(request.version(), "Version must be omitted when creating a company");
         var owner = userRepo.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         Company company = new Company();
@@ -63,6 +65,10 @@ public class CompanyService {
     public CompanyResponse updateCompany(UUID companyId, UUID userId, CompanyRequest request) {
         Company company = requireOwnedCompany(companyId, userId);
         validate(request);
+        Assert.notNull(request.version(), "Version is required when updating a company");
+        if (!company.getVersion().equals(request.version())) {
+            throw new CompanyVersionConflictException();
+        }
         apply(company, request);
         Company saved = companyRepo.saveAndFlush(company);
         return CompanyResponse.from(saved);

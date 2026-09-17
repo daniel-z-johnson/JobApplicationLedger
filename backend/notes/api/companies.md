@@ -25,7 +25,21 @@ All endpoints require authentication. Ownership comes from the authenticated pri
 
 `name` and `companyType` are required and limited to 255 and 127 characters respectively. Company type values are not yet restricted to an enum; `EMPLOYER` is an example. Optional URLs must use HTTP or HTTPS. Blank optional URLs become null.
 
-PUT replaces all editable fields: omitted optional URLs are cleared. The request does not accept ownership or audit fields as editable properties. Responses contain `id`, `name`, `companyType`, `websiteUrl`, `careersUrl`, `createdAt`, and `updatedAt`.
+POST must omit `version` (or supply null); the server initializes it. PUT requires a nonnegative `version` copied from the most recent company response:
+
+```json
+{
+  "name": "Acme",
+  "companyType": "EMPLOYER",
+  "websiteUrl": "https://example.com",
+  "careersUrl": null,
+  "version": 0
+}
+```
+
+PUT replaces all editable fields: omitted optional URLs are cleared. The request does not accept ownership or audit fields as editable properties. Responses contain `id`, `name`, `companyType`, `websiteUrl`, `careersUrl`, `createdAt`, `updatedAt`, and `version`. JPA increments the version when the company is changed; always use the version returned by the server for the next edit.
+
+An outdated version or a concurrent write returns 409. Reload the company and reconcile changes before resubmitting; do not blindly retry with the newer version. A missing or negative PUT version returns 400. DELETE keeps its existing contract without a client version, although JPA detects conflicting changes between the server's load and delete.
 
 ## Pagination
 
@@ -44,3 +58,4 @@ Errors use the existing `ApiErrorResponse` format:
 - 403: missing or invalid CSRF token.
 - 404: company is missing or belongs to another user; both return `Company not found`.
 - 409: database conflict, including duplicate company names for the same user after case and surrounding-space normalization.
+- 409: stale company version or optimistic-locking conflict.

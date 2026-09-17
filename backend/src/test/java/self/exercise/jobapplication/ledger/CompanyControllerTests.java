@@ -51,8 +51,9 @@ class CompanyControllerTests {
                 .endsWith("/companies/" + id);
         mvc.perform(put("/companies/{id}", id).with(user(owner)).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Updated\",\"companyType\":\"AGENCY\"}"))
+                        .content("{\"name\":\"Updated\",\"companyType\":\"AGENCY\",\"version\":0}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.name").value("Updated"))
+                .andExpect(jsonPath("$.version").value(1))
                 .andExpect(jsonPath("$.websiteUrl").isEmpty());
         mvc.perform(delete("/companies/{id}", id).with(user(owner)).with(csrf()))
                 .andExpect(status().isNoContent()).andExpect(content().string(""));
@@ -128,6 +129,38 @@ class CompanyControllerTests {
                 .andExpect(status().isBadRequest());
         mvc.perform(get("/companies/not-a-uuid").with(user(owner)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void staleUpdatesReturn409AndPreserveNewerData() throws Exception {
+        var owner = principal("owner");
+        UUID id = create(owner, "Acme");
+        mvc.perform(get("/companies/{id}", id).with(user(owner)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.version").value(0));
+        mvc.perform(put("/companies/{id}", id).with(user(owner)).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"New name\",\"companyType\":\"EMPLOYER\",\"version\":0}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.version").value(1));
+        mvc.perform(put("/companies/{id}", id).with(user(owner)).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Old form\",\"companyType\":\"EMPLOYER\",\"version\":0}"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.status").value(409));
+        mvc.perform(get("/companies/{id}", id).with(user(owner)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.name").value("New name"))
+                .andExpect(jsonPath("$.version").value(1));
+    }
+
+    @Test
+    void updatesRequireNonnegativeVersion() throws Exception {
+        var owner = principal("owner");
+        UUID id = create(owner, "Acme");
+        mvc.perform(put("/companies/{id}", id).with(user(owner)).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content(VALID))
+                .andExpect(status().isBadRequest());
+        mvc.perform(put("/companies/{id}", id).with(user(owner)).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Acme\",\"companyType\":\"EMPLOYER\",\"version\":-1}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.violations.version").isArray());
     }
 
     @Test
