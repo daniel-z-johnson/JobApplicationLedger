@@ -23,19 +23,25 @@ CREATE TABLE companies (
     id              UUID PRIMARY KEY,
     user_id         UUID NOT NULL,
     name            VARCHAR(255) NOT NULL,
-    company_type    VARCHAR(30) NOT NULL,
+    company_type    VARCHAR(127) NOT NULL,
     website_url     TEXT,
     careers_url     TEXT,
-    created_at      TIMESTAMP NOT NULL,
-    updated_at      TIMESTAMP NOT NULL,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_companies_user
         FOREIGN KEY (user_id)
         REFERENCES users(id),
 
-    CONSTRAINT uq_companies_user_name
-        UNIQUE (user_id, name)
+    CONSTRAINT uq_companies_user_id
+        UNIQUE (user_id, id),
+
+    CONSTRAINT chk_companies_name_not_blank
+        CHECK (btrim(name) <> '')
 );
+
+CREATE UNIQUE INDEX uq_companies_user_normalized_name
+    ON companies (user_id, lower(btrim(name)));
 ```
 
 ### applications
@@ -208,15 +214,17 @@ Passwords must never be stored in plaintext.
 
 Keeping these separate is useful because many companies use a dedicated hiring domain or a third-party applicant tracking system.
 
-The following constraint:
+The following unique index:
 
 ```text
-UNIQUE(user_id, name)
+UNIQUE (user_id, lower(btrim(name)))
 ```
 
-prevents a single user from accidentally creating duplicate company records while allowing different users to independently track the same company.
+prevents a single user from creating duplicate company names that differ only in capitalization or surrounding spaces, while allowing different users to independently track the same company.
 
-Company notes are intentionally not part of the current core schema. A separate `company_notes` table can be added later if multiple company-level notes become useful.
+Companies are implemented in `V3__companies.sql`. The `(user_id, id)` unique key supports future composite foreign keys that enforce application/company ownership. `company_type` is required; its allowed values still need to be defined. The application must maintain `updated_at` on edits; its default only initializes it on insertion.
+
+Company notes are a planned feature. The proposed `companies_notes` table is documented under Possible Future Tables and is not yet implemented by a migration.
 
 ---
 
@@ -530,12 +538,40 @@ This distinction is the reason both `updated_at` and `last_activity_at` exist.
 
 These are not part of the current schema.
 
-### company_notes
+### companies_notes (planned)
 
-A future `company_notes` table could support multiple notes about a company, such as:
+A future `companies_notes` table will support multiple notes about a company, such as:
 
 - hiring process observations
 - recruiter history
 - office or hybrid-work information
 - previous interview experience
 
+```sql
+CREATE TABLE companies_notes (
+    id          UUID PRIMARY KEY,
+    company_id  UUID NOT NULL,
+    note        TEXT NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_companies_notes_company
+        FOREIGN KEY (company_id)
+        REFERENCES companies(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_companies_notes_note_not_blank
+        CHECK (note ~ '[^[:space:]]')
+);
+
+CREATE INDEX idx_companies_notes_company_created
+    ON companies_notes (company_id, created_at DESC, id DESC);
+```
+
+One company can have many notes; each note belongs to exactly one company. Ownership is inherited through `companies.user_id`, so a separate `user_id` column is unnecessary. Future endpoints must scope reads, creation, edits, and deletion to the authenticated owner through the company relationship, including when looking up a note by its ID.
+
+Notes are listed newest first with `ORDER BY created_at DESC, id DESC`; the ID breaks ties for notes created at the same time. The index supports this company-specific listing.
+
+Deleting a company deletes its notes. Archiving a company, if introduced, should preserve them. Notes can be edited independently, and the application must maintain `updated_at` on edits. The check constraint rejects empty or whitespace-only notes.
+
+This is a design proposal only. Add a new Flyway migration when implementing the feature.
