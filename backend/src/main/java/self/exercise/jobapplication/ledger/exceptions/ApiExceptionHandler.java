@@ -3,8 +3,12 @@ package self.exercise.jobapplication.ledger.exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -21,6 +25,25 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler(CompanyVersionConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleCompanyVersionConflict(
+            CompanyVersionConflictException exception, HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler({OptimisticLockingFailureException.class, OptimisticLockException.class})
+    public ResponseEntity<ApiErrorResponse> handleConcurrentModification(
+            Exception exception, HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, "The record has changed. Reload it before trying again.", request);
+    }
+
+    @ExceptionHandler(CompanyNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleCompanyNotFound(
+            CompanyNotFoundException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.NOT_FOUND, exception.getMessage(), request);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
@@ -80,9 +103,10 @@ public class ApiExceptionHandler {
         return response(HttpStatus.FORBIDDEN, "Access denied", request);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ApiErrorResponse> handleBadRequest(
-            IllegalArgumentException exception,
+            Exception exception,
             HttpServletRequest request) {
         return response(HttpStatus.BAD_REQUEST, "The request is invalid", request);
     }

@@ -1,0 +1,2 @@
+ALTER TABLE companies
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0;
