@@ -33,19 +33,41 @@ function CompanyDetail({ id, onRetry, onSessionExpired }: { id: string; onRetry:
   </div>
   if (!company) return <p role="status">Loading company…</p>
   return <>
-    <section aria-labelledby="company-heading" className="rounded-xl border border-gray-600 bg-gray-800 p-6 sm:p-8">
-      <h1 id="company-heading" className="break-words text-2xl font-bold">{company.name}</h1>
-      <dl className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div className="min-w-0"><dt className="mb-2 text-xs font-semibold text-gray-300">Company type</dt><dd className="rounded-md border border-gray-500 bg-gray-700 px-3 py-2.5 break-words text-gray-100">{company.companyType}</dd></div>
-        <div className="min-w-0"><dt className="mb-2 text-xs font-semibold text-gray-300">Website URL</dt><dd className="rounded-md border border-gray-500 bg-gray-700 px-3 py-2.5 break-words text-gray-100"><CompanyUrl value={company.websiteUrl} /></dd></div>
-        <div className="min-w-0"><dt className="mb-2 text-xs font-semibold text-gray-300">Careers URL</dt><dd className="rounded-md border border-gray-500 bg-gray-700 px-3 py-2.5 break-words text-gray-100"><CompanyUrl value={company.careersUrl} /></dd></div>
-        <div className="min-w-0"><dt className="mb-2 text-xs font-semibold text-gray-300">Created at</dt><dd className="rounded-md border border-gray-500 bg-gray-700 px-3 py-2.5 break-words text-gray-100"><time dateTime={company.createdAt}>{formatDateTime(company.createdAt)}</time></dd></div>
-        <div className="min-w-0"><dt className="mb-2 text-xs font-semibold text-gray-300">Updated at</dt><dd className="rounded-md border border-gray-500 bg-gray-700 px-3 py-2.5 break-words text-gray-100"><time dateTime={company.updatedAt}>{formatDateTime(company.updatedAt)}</time></dd></div>
+    <section aria-labelledby="company-heading" className="overflow-hidden rounded-xl border border-gray-700 bg-gray-800">
+      <div className="p-5 sm:p-8">
+        <h1 id="company-heading" className="break-words text-3xl font-bold tracking-tight sm:text-4xl">{company.name}</h1>
+        <dl className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="min-w-0 rounded-lg border border-gray-600 bg-gray-700/30 p-4 lg:col-span-2">
+            <dt className="text-[10px] font-semibold text-gray-400">Company type</dt>
+            <dd className="mt-2 break-words text-base font-medium text-gray-100">{company.companyType}</dd>
+          </div>
+          <div className="min-w-0 rounded-lg border border-gray-600 bg-gray-700/30 p-4">
+            <dt className="text-[10px] font-semibold text-gray-400">Website URL</dt>
+            <dd className="mt-2 break-words text-sm leading-6 text-gray-100"><CompanyUrl value={company.websiteUrl} /></dd>
+          </div>
+          <div className="min-w-0 rounded-lg border border-gray-600 bg-gray-700/30 p-4">
+            <dt className="text-[10px] font-semibold text-gray-400">Careers URL</dt>
+            <dd className="mt-2 break-words text-sm leading-6 text-gray-100"><CompanyUrl value={company.careersUrl} /></dd>
+          </div>
+        </dl>
+      </div>
+      <dl className="grid grid-cols-1 gap-5 border-t border-gray-700 bg-gray-900/30 px-5 py-5 sm:px-8 lg:grid-cols-2">
+        <div className="min-w-0">
+          <dt className="text-[10px] font-semibold text-gray-400">Created at</dt>
+          <dd className="mt-2 text-sm text-gray-300"><time dateTime={company.createdAt}>{formatDateTime(company.createdAt)}</time></dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-[10px] font-semibold text-gray-400">Updated at</dt>
+          <dd className="mt-2 text-sm text-gray-300"><time dateTime={company.updatedAt}>{formatDateTime(company.updatedAt)}</time></dd>
+        </div>
       </dl>
     </section>
-    <section aria-labelledby="applications-heading" className="mt-8 rounded-xl border border-dashed border-gray-600 p-6 sm:p-8">
+    <section aria-labelledby="applications-heading" className="mt-6 rounded-xl border border-gray-700 bg-gray-800/40 p-5 sm:p-8">
       <h2 id="applications-heading" className="text-xl font-semibold">Applications</h2>
-      <p className="mt-3 text-gray-300">Applications for this company will be listed here. This feature is coming soon.</p>
+      <div className="mt-5 rounded-lg border border-dashed border-gray-600 px-4 py-8 text-center">
+        <p className="text-sm text-gray-300">Applications for this company will be listed here.</p>
+        <p className="mt-2 text-xs text-gray-400">Coming soon</p>
+      </div>
     </section>
   </>
 }
