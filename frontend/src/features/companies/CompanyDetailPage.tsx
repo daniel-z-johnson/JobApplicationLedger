@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { CompanyError, getCompany } from './api/companies'
 import type { CompanyDetails } from './api/companies'
 import { formatDateTime } from './formatDateTime'
 
 export default function CompanyDetailPage({ onSessionExpired }: { onSessionExpired: () => void }) {
   const { companyId = '' } = useParams()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [attempt, setAttempt] = useState(0)
   return <main className="mx-auto max-w-4xl px-4 py-10 sm:py-16">
     <Link to="/companies" className="mb-6 inline-block text-sm underline">Back to companies</Link>
+    {location.state?.createdCompanyId === companyId && <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-green-700 bg-green-950 p-4 text-green-100">
+      <p role="status">Company added.</p>
+      <button type="button" onClick={() => navigate(location.pathname, { replace: true, state: null })} className="text-sm underline">Dismiss</button>
+    </div>}
     <CompanyDetail key={`${companyId}-${attempt}`} id={companyId} onRetry={() => setAttempt(value => value + 1)} onSessionExpired={onSessionExpired} />
   </main>
 }

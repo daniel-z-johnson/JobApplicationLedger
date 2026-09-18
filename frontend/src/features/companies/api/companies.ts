@@ -25,9 +25,9 @@ export async function getCompany(id: string, signal?: AbortSignal): Promise<Comp
   return response.json()
 }
 
-export async function createCompany(details: NewCompany, signal?: AbortSignal): Promise<void> {
+export async function createCompany(details: NewCompany, signal?: AbortSignal): Promise<CompanyDetails> {
   const response = await apiRequest('/companies', { method: 'POST', json: details, signal })
-  if (response.ok) return
+  if (response.ok) return response.json()
   if (response.status === 409) throw new CompanyError('A company with this name already exists.', 409)
   if (response.status === 403) throw new CompanyError('Your security token could not be verified. Please submit again.', 403)
   if (response.status === 400) throw new CompanyError('Check the company details. URLs must be valid HTTP or HTTPS addresses.', 400)

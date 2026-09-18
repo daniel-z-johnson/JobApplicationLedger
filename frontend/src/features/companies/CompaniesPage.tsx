@@ -38,6 +38,12 @@ function CompanyList({ page, onPage, onRetry, onSessionExpired }: { page: number
   if (!result) return <p role="status">Loading companies…</p>
   if (!result.page.totalElements) return <p className="rounded-xl border border-gray-600 bg-gray-800 p-8">You haven’t added any companies yet.</p>
   return <>
+    <p role="status" className="mb-4 text-sm text-gray-300">
+      {result.content.length
+        ? `Showing ${result.page.number * result.page.size + 1}–${result.page.number * result.page.size + result.content.length} of ${result.page.totalElements} ${result.page.totalElements === 1 ? 'company' : 'companies'}`
+        : `Showing 0 of ${result.page.totalElements} companies`}
+    </p>
+    <CompanyPagination page={page} totalPages={result.page.totalPages} onPage={onPage} />
     {result.content.length ? <ul className="divide-y divide-gray-600 overflow-hidden rounded-xl border border-gray-600 bg-gray-800">
       {result.content.map(company => <li key={company.id}>
         <Link to={`/companies/${company.id}`} className="block p-5 transition-colors hover:bg-gray-700 focus-visible:bg-gray-700 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-300">
@@ -47,10 +53,14 @@ function CompanyList({ page, onPage, onRetry, onSessionExpired }: { page: number
         </Link>
       </li>)}
     </ul> : <p>No companies on this page. <button className="underline" onClick={() => onPage(0)}>Return to the first page</button></p>}
-    <nav aria-label="Company pages" className="mt-6 flex flex-wrap items-center justify-between gap-4">
-      <button disabled={page === 0} onClick={() => onPage(page - 1)} className="rounded-md border border-gray-500 px-4 py-2 hover:bg-gray-700 disabled:opacity-40">Previous</button>
-      <p role="status" className="text-sm text-gray-300">{page < result.page.totalPages ? `Page ${page + 1} of ${result.page.totalPages}` : 'Page unavailable'}</p>
-      <button disabled={page + 1 >= result.page.totalPages} onClick={() => onPage(page + 1)} className="rounded-md border border-gray-500 px-4 py-2 hover:bg-gray-700 disabled:opacity-40">Next</button>
-    </nav>
+    <CompanyPagination page={page} totalPages={result.page.totalPages} onPage={onPage} />
   </>
+}
+
+function CompanyPagination({ page, totalPages, onPage }: { page: number; totalPages: number; onPage: (page: number) => void }) {
+  return <nav aria-label="Company pages" className="my-6 flex flex-wrap items-center justify-between gap-4">
+      <button disabled={page === 0} onClick={() => onPage(page - 1)} className="rounded-md border border-gray-500 px-4 py-2 hover:bg-gray-700 disabled:opacity-40">Previous</button>
+      <p className="text-sm text-gray-300">{page < totalPages ? `Page ${page + 1} of ${totalPages}` : 'Page unavailable'}</p>
+      <button disabled={page + 1 >= totalPages} onClick={() => onPage(page + 1)} className="rounded-md border border-gray-500 px-4 py-2 hover:bg-gray-700 disabled:opacity-40">Next</button>
+    </nav>
 }

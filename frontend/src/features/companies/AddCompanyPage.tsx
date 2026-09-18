@@ -30,8 +30,8 @@ export default function AddCompanyPage({ onSessionExpired }: { onSessionExpired:
     setPending(true)
     setError('')
     try {
-      await createCompany({ name: value('name'), companyType: value('companyType'), websiteUrl: value('websiteUrl') || null, careersUrl: value('careersUrl') || null }, controller.signal)
-      if (!controller.signal.aborted) navigate('/companies', { replace: true })
+      const company = await createCompany({ name: value('name'), companyType: value('companyType'), websiteUrl: value('websiteUrl') || null, careersUrl: value('careersUrl') || null }, controller.signal)
+      if (!controller.signal.aborted) navigate(`/companies/${company.id}`, { replace: true, state: { createdCompanyId: company.id } })
     } catch (failure) {
       if (controller.signal.aborted) return
       if (failure instanceof CompanyError && failure.status === 401) onSessionExpired()

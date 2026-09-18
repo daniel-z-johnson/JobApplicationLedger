@@ -38,8 +38,9 @@ describe('companies API', () => {
 
   it('creates through the shared secure request helper without ownership fields', async () => {
     const details = { name: 'Acme', companyType: 'Financial services', websiteUrl: null, careersUrl: null }
-    request.mockResolvedValueOnce(new Response(null, { status: 201 }))
-    await createCompany(details)
+    const created = { ...details, id: 'new-company', createdAt: '2026-09-18T12:00:00Z', updatedAt: '2026-09-18T12:00:00Z' }
+    request.mockResolvedValueOnce(Response.json(created, { status: 201 }))
+    await expect(createCompany(details)).resolves.toEqual(created)
     expect(request).toHaveBeenCalledWith('/companies', { method: 'POST', json: details, signal: undefined })
   })
 
