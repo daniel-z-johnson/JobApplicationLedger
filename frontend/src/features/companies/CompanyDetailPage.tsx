@@ -37,15 +37,11 @@ function CompanyDetail({ id, onRetry, onSessionExpired }: { id: string; onRetry:
       <div className="p-5 sm:p-8">
         <h1 id="company-heading" className="break-words text-3xl font-bold tracking-tight sm:text-4xl">{company.name}</h1>
         <dl className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="min-w-0 rounded-lg border border-gray-600 bg-gray-700/30 p-4 lg:col-span-2">
-            <dt className="text-[10px] font-semibold text-gray-400">Company type</dt>
-            <dd className="mt-2 break-words text-base font-medium text-gray-100">{company.companyType}</dd>
-          </div>
-          <div className="min-w-0 rounded-lg border border-gray-600 bg-gray-700/30 p-4">
+          <div className="min-w-0">
             <dt className="text-[10px] font-semibold text-gray-400">Website URL</dt>
             <dd className="mt-2 break-words text-sm leading-6 text-gray-100"><CompanyUrl value={company.websiteUrl} /></dd>
           </div>
-          <div className="min-w-0 rounded-lg border border-gray-600 bg-gray-700/30 p-4">
+          <div className="min-w-0">
             <dt className="text-[10px] font-semibold text-gray-400">Careers URL</dt>
             <dd className="mt-2 break-words text-sm leading-6 text-gray-100"><CompanyUrl value={company.careersUrl} /></dd>
           </div>
